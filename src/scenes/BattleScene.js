@@ -184,7 +184,7 @@ export default class BattleScene extends Phaser.Scene {
             this.sound.play('menu_move');
             this.menuIndex = (this.menuIndex - 1 + this.menuOptions.length) % this.menuOptions.length;
             this.updateMenuCursor();
-        } else if (event.code === 'Enter' || event.code === 'Space') {
+        } else if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
             this.sound.play('menu_select');
             this.executeMenuAction();
         } else if (event.code === 'KeyP' || (event.code === 'Escape' && this.currentMenu === 'main')) {

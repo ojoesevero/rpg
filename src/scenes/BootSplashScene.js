@@ -33,6 +33,7 @@ export default class BootSplashScene extends Phaser.Scene {
         this.input.on('pointerdown', () => this.skipIntro());
         this.input.keyboard.on('keydown-SPACE', () => this.skipIntro());
         this.input.keyboard.on('keydown-ENTER', () => this.skipIntro());
+        this.input.keyboard.on('keydown-NUMPAD_ENTER', () => this.skipIntro());
     }
 
     showCrawl() {

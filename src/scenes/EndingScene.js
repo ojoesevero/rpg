@@ -53,7 +53,7 @@ export default class EndingScene extends Phaser.Scene {
 
         // Retorno ao Menu
         this.input.keyboard.on('keydown', (event) => {
-            if (event.code === 'Enter' || event.code === 'Space') {
+            if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
                 this.sound.play('menu_select');
                 this.sound.stopAll();
                 this.registry.destroy();

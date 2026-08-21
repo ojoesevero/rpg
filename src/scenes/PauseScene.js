@@ -34,7 +34,7 @@ export default class PauseScene extends Phaser.Scene {
                 this.sound.play('menu_move');
                 this.menuIndex = (this.menuIndex - 1 + this.menuOptions.length) % this.menuOptions.length;
                 this.updateCursor();
-            } else if (event.code === 'Enter' || event.code === 'Space') {
+            } else if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
                 this.sound.play('menu_select');
                 this.executeAction();
             } else if (event.code === 'Escape' || event.code === 'KeyP') {

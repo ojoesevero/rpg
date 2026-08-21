@@ -68,7 +68,7 @@ export default class IntroVideoScene extends Phaser.Scene {
 
         // Evento para pular a cutscene
         this.input.keyboard.on('keydown', (event) => {
-            if (event.code === 'Space' || event.code === 'Enter') {
+            if (event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter') {
                 if (this.isTransitioning) return;
                 this.isTransitioning = true;
                 

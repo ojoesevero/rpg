@@ -81,7 +81,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Transição de Cena
         this.input.keyboard.on('keydown', (event) => {
-            if (event.code === 'Enter' || event.code === 'Space') {
+            if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
                 this.sound.play('menu_select');
                 
                 // Fade out visual e sonoro
