@@ -15,7 +15,7 @@ export default class BootSplashScene extends Phaser.Scene {
 
         // Fase 1: Logotipo "VELHOS GAMES"
         const logo = this.add.text(400, 300, 'VELHOS GAMES', {
-            fontFamily: 'Courier', fontSize: '64px', fontStyle: 'bold', color: '#ffea00',
+            fontFamily: 'Pixelify Sans', fontSize: '64px', fontStyle: 'bold', color: '#ffea00',
             shadow: { offsetX: 0, offsetY: 0, color: '#ffea00', blur: 20, stroke: true, fill: true }
         }).setOrigin(0.5).setAlpha(0);
 
@@ -43,7 +43,7 @@ export default class BootSplashScene extends Phaser.Scene {
         const crawlText = "As antigas profecias falavam de uma era de sombras...\n\nNas profundezas da Floresta de Walldarten,\no véu entre os mundos começa a ruir.\n\nJohn Bardem, patrulheiro solitário, assume a vigília\ncontra as criaturas que rastejam do Abismo...";
         
         this.crawl = this.add.text(400, 600, crawlText, {
-            fontFamily: 'Courier', fontSize: '24px', color: '#ffea00', align: 'center', lineSpacing: 10
+            fontFamily: 'Pixelify Sans', fontSize: '24px', color: '#ffea00', align: 'center', lineSpacing: 10
         }).setOrigin(0.5, 0);
 
         // Tween para subir e diminuir (perspectiva)

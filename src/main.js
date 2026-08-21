@@ -17,7 +17,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 }, // Top-down, sem gravidade vertical
+            gravity: { y: 0 },
             debug: false
         }
     },

@@ -24,25 +24,33 @@ export default class IntroVideoScene extends Phaser.Scene {
         // Cria o reprodutor de vídeo ajustado à tela 800x600
         const initialVideo = this.isBossTransition ? 'intro3' : 'intro2';
         const videoPlayer = this.add.video(400, 300, initialVideo);
-        videoPlayer.setDisplaySize(800, 600);
+        
+        videoPlayer.on('play', () => {
+            const scaleX = 800 / videoPlayer.width;
+            const scaleY = 600 / videoPlayer.height;
+            const scale = Math.min(scaleX, scaleY);
+            videoPlayer.setScale(scale);
+        });
+        
         videoPlayer.play();
 
         const initialSubtitle = this.isBossTransition ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' : 'John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.';
 
         // Legenda Narrativa
-        const subtitleText = this.add.text(400, 500, initialSubtitle, {
-            fontFamily: 'Courier',
-            fontSize: '20px',
-            color: '#ffea00',
+        const subtitleText = this.add.text(400, 520, initialSubtitle, {
+            fontFamily: 'Pixelify Sans',
+            fontSize: '16px',
+            color: '#f4d03f',
             align: 'center',
             backgroundColor: '#000000aa',
-            padding: { x: 10, y: 5 }
+            padding: { x: 10, y: 5 },
+            wordWrap: { width: 700 }
         }).setOrigin(0.5).setDepth(10);
 
         // Texto informando opção de pular
         const skipText = this.add.text(400, 570, '[ Espaço ] Pular Introdução', {
-            fontFamily: 'Courier',
-            fontSize: '18px',
+            fontFamily: 'Pixelify Sans',
+            fontSize: '16px',
             color: '#ffffff',
             backgroundColor: '#000000aa'
         }).setOrigin(0.5).setDepth(10);

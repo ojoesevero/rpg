@@ -18,9 +18,25 @@ export default class BattleScene extends Phaser.Scene {
         this.input.keyboard.enabled = true; // Garante que inputs estão ativos ao (re)iniciar
         this.cameras.main.setBackgroundColor('#1a1a24');
         
-        const bg = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'battle_bg');
-        bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-        bg.setDepth(-1);
+        // Fundo em camadas Parallax (usando a mesma textura 'battle_bg' para simular profundidade se não houver camadas separadas)
+        this.bgSky = this.add.tileSprite(400, 300, 800, 600, 'battle_bg').setDepth(-4);
+        this.bgSky.setTint(0x333344); 
+
+        this.bgMountains = this.add.tileSprite(400, 300, 800, 600, 'battle_bg').setDepth(-3);
+        this.bgMountains.setTint(0x555566); 
+        this.bgMountains.setAlpha(0.6);
+
+        this.bgGround = this.add.tileSprite(400, 300, 800, 600, 'battle_bg').setDepth(-2);
+        
+        // Camada de Névoa (Gerada dinamicamente)
+        const fogGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+        fogGraphics.fillStyle(0xcccccc, 1);
+        fogGraphics.fillRect(0, 0, 256, 256);
+        fogGraphics.generateTexture('fogTexture', 256, 256);
+        this.fogLayer = this.add.tileSprite(400, 500, 800, 200, 'fogTexture')
+            .setDepth(-1)
+            .setAlpha(0.25)
+            .setBlendMode(Phaser.BlendModes.ADD);
 
         // Caixa de Diálogo / Log no Canto Inferior Esquerdo
         this.add.rectangle(250, 510, 460, 140, 0x000000, 0.85).setStrokeStyle(4, 0x4a3c31).setDepth(9);
@@ -67,6 +83,16 @@ export default class BattleScene extends Phaser.Scene {
         this.playerSprite = this.add.sprite(600, 380, 'john', 2).setScale(0.3).setFlipX(true);
         this.enemySprite = this.add.sprite(200, 380, 'goblin', 0).setScale(this.isBoss ? 0.3 : 0.2);
         if (this.isBoss) this.enemySprite.setTint(0xffaa55);
+
+        // Efeito Atmosférico: Breathing (Respiração em Idle)
+        this.tweens.add({
+            targets: [this.playerSprite, this.enemySprite],
+            scaleY: '+=0.015',
+            yoyo: true,
+            repeat: -1,
+            duration: 1200,
+            ease: 'Sine.easeInOut'
+        });
 
         this.isPlayerTurn = true;
         this.currentMenu = 'main'; 
@@ -158,16 +184,12 @@ export default class BattleScene extends Phaser.Scene {
         this.menuOptions.forEach((opt, index) => {
             const btn = this.domMenuContainer.getChildByID(opt.id);
             if (btn) {
+                // Remove estilos inline caso tenham sido aplicados antes e usa apenas a classe
+                btn.removeAttribute('style');
                 if (index === this.menuIndex) {
-                    btn.style.borderColor = '#ffea00';
-                    btn.style.color = '#ffffff';
-                    btn.style.transform = 'scale(1.02)';
-                    btn.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                    btn.classList.add('selected');
                 } else {
-                    btn.style.borderColor = '#8b7355';
-                    btn.style.color = '#f5deb3';
-                    btn.style.transform = 'scale(1)';
-                    btn.style.boxShadow = 'none';
+                    btn.classList.remove('selected');
                 }
             }
         });
@@ -424,5 +446,12 @@ export default class BattleScene extends Phaser.Scene {
                 this.time.delayedCall(1500, () => this.scene.start('MainScene'));
             }
         });
+    }
+
+    update() {
+        // Movimentação suave das camadas Parallax
+        if (this.bgSky) this.bgSky.tilePositionX += 0.05;
+        if (this.bgMountains) this.bgMountains.tilePositionX += 0.12;
+        if (this.fogLayer) this.fogLayer.tilePositionX += 0.35;
     }
 }

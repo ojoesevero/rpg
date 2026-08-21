@@ -6,63 +6,76 @@ export default class EndingScene extends Phaser.Scene {
     }
 
     create() {
-        this.cameras.main.setBackgroundColor('#050508');
+        this.isTransitioning = false;
+        
+        // Fundo noturno
+        this.bg = this.add.tileSprite(400, 300, 800, 600, 'battle_bg').setDepth(-3);
+        this.bg.setTint(0x223344); 
+        
+        // Névoa
+        if (this.textures.exists('fogTextureTitle')) {
+            this.fogLayer = this.add.tileSprite(400, 500, 800, 200, 'fogTextureTitle')
+                .setDepth(-2)
+                .setAlpha(0.25)
+                .setBlendMode(Phaser.BlendModes.ADD);
+        } else {
+            const fogGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+            fogGraphics.fillStyle(0xcccccc, 1);
+            fogGraphics.fillRect(0, 0, 256, 256);
+            fogGraphics.generateTexture('fogTextureEnding', 256, 256);
+            this.fogLayer = this.add.tileSprite(400, 500, 800, 200, 'fogTextureEnding')
+                .setDepth(-2)
+                .setAlpha(0.25)
+                .setBlendMode(Phaser.BlendModes.ADD);
+        }
 
-        // Partículas suaves no fundo (simulando estrelas ou magia)
-        const particles = this.add.particles(0, 0, 'john', {
-            x: { min: 0, max: 800 },
-            y: { min: 0, max: 600 },
-            lifespan: 4000,
-            speedY: { min: -10, max: -30 },
-            scale: { start: 0.02, end: 0 },
-            quantity: 1,
-            blendMode: 'ADD'
-        });
-        particles.setAlpha(0.2);
+        // DOM HTML
+        const endingHTML = `
+            <div class="ending-container">
+                <div class="ending-title">⚔️ VITÓRIA EM BRENTEL ⚔️</div>
+                <div class="ending-text">
+                    O Líder Goblin sucumbiu sob o peso do aço e da estratégia.<br>
+                    As matas de Walldarten respiram aliviadas... por ora.<br>
+                    Mas John Bardem sabe que a vigília apenas começou.
+                </div>
+                <div class="ending-highlight">Os Seis Contra o Abismo<br>Capítulo 1: As Ruínas de Aethelgard</div>
+                <div class="ending-credits">© 2026 VELHOS GAMES | Dev: Joe Severo</div>
+                <button id="btn-restart" class="ending-button">[ Pressione ENTER ou Toque para Reiniciar ]</button>
+            </div>
+        `;
 
-        // Textos centralizados
-        this.add.text(400, 200, 'DEMO CONCLUÍDA!', {
-            fontFamily: 'Courier', fontSize: '36px', fontStyle: 'bold', color: '#ffea00',
-            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true }
-        }).setOrigin(0.5);
+        this.domUI = this.add.dom(400, 300).createFromHTML(endingHTML).setDepth(10);
+        
+        const btnRestart = this.domUI.getChildByID('btn-restart');
+        if (btnRestart) {
+            btnRestart.addEventListener('click', () => this.restartGame());
+        }
 
-        this.add.text(400, 280, 'O Líder Goblin foi derrotado e as matas de Walldarten\nestão temporariamente seguras.', {
-            fontFamily: 'Courier', fontSize: '18px', color: '#ffffff', align: 'center', lineSpacing: 10
-        }).setOrigin(0.5);
-
-        this.add.text(400, 360, 'Em breve: Os Seis Contra o Abismo - Capítulo 1.', {
-            fontFamily: 'Courier', fontSize: '18px', color: '#aaaaaa'
-        }).setOrigin(0.5);
-
-        this.add.text(400, 420, 'Desenvolvido por: Joe Severo | Velhos Games', {
-            fontFamily: 'Courier', fontSize: '16px', color: '#00bfff'
-        }).setOrigin(0.5);
-
-        const blinkText = this.add.text(400, 520, '[ Pressione ENTER para Voltar ao Menu Principal ]', {
-            fontFamily: 'Courier', fontSize: '18px', fontStyle: 'bold', color: '#ffffff'
-        }).setOrigin(0.5);
-
-        this.tweens.add({
-            targets: blinkText,
-            alpha: 0,
-            duration: 800,
-            ease: 'Linear',
-            yoyo: true,
-            repeat: -1
-        });
-
-        // Retorno ao Menu
+        // Teclado
         this.input.keyboard.on('keydown', (event) => {
             if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
-                this.sound.play('menu_select');
-                this.sound.stopAll();
-                this.registry.destroy();
-                
-                this.cameras.main.fadeOut(1000, 0, 0, 0);
-                this.cameras.main.once('camerafadeoutcomplete', () => {
-                    this.scene.start('TitleScene');
-                });
+                this.restartGame();
             }
         });
+    }
+
+    restartGame() {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+        
+        if (this.sound.get('menu_select')) this.sound.play('menu_select');
+        this.sound.stopAll();
+        this.registry.destroy();
+        
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('TitleScene');
+        });
+    }
+
+    update() {
+        if (this.fogLayer) {
+            this.fogLayer.tilePositionX += 0.3;
+        }
     }
 }
