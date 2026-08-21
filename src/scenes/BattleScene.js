@@ -141,6 +141,9 @@ export default class BattleScene extends Phaser.Scene {
         } else if (event.code === 'Enter' || event.code === 'Space') {
             this.sound.play('menu_select');
             this.executeMenuAction();
+        } else if (event.code === 'KeyP' || (event.code === 'Escape' && this.currentMenu === 'main')) {
+            this.scene.pause();
+            this.scene.launch('PauseScene', { from: this.scene.key });
         } else if ((event.code === 'Escape' || event.code === 'Backspace') && (this.currentMenu === 'skills' || this.currentMenu === 'items')) {
             this.sound.play('menu_select');
             this.currentMenu = 'main';
@@ -343,9 +346,7 @@ export default class BattleScene extends Phaser.Scene {
                 // Fim da Demo
                 this.cameras.main.fadeOut(1500, 0, 0, 0);
                 this.cameras.main.once('camerafadeoutcomplete', () => {
-                    this.add.rectangle(400, 300, 800, 600, 0x000000).setDepth(99);
-                    this.add.text(400, 250, 'DEMO CONCLUÍDA', { fontFamily: 'Courier', fontSize: '32px', fontStyle: 'bold', color: '#ffea00' }).setOrigin(0.5).setDepth(100);
-                    this.add.text(400, 320, 'Em breve a jornada dos Seis Contra o Abismo...', { fontFamily: 'Courier', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5).setDepth(100);
+                    this.scene.start('EndingScene');
                 });
                 return;
             }

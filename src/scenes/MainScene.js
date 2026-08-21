@@ -186,6 +186,14 @@ export default class MainScene extends Phaser.Scene {
             left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
         });
         
+        // Tecla de Pause
+        this.input.keyboard.on('keydown', (event) => {
+            if (event.code === 'Escape' || event.code === 'KeyP') {
+                this.scene.pause();
+                this.scene.launch('PauseScene', { from: this.scene.key });
+            }
+        });
+
         this.playerSpeed = 200;
     }
 

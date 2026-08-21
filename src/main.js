@@ -3,6 +3,8 @@ import TitleScene from './scenes/TitleScene';
 import IntroVideoScene from './scenes/IntroVideoScene';
 import MainScene from './scenes/MainScene';
 import BattleScene from './scenes/BattleScene';
+import EndingScene from './scenes/EndingScene';
+import PauseScene from './scenes/PauseScene';
 
 const config = {
     type: Phaser.AUTO,
@@ -16,7 +18,7 @@ const config = {
             debug: false
         }
     },
-    scene: [TitleScene, IntroVideoScene, MainScene, BattleScene],
+    scene: [TitleScene, IntroVideoScene, MainScene, BattleScene, EndingScene, PauseScene],
     pixelArt: true, // Importante para jogos 8-bits
     scale: {
         mode: Phaser.Scale.FIT,
