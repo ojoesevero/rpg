@@ -7,7 +7,6 @@ export default class IntroVideoScene extends Phaser.Scene {
 
     preload() {
         // Carrega os vídeos da cutscene inicial
-        this.load.video('intro1', 'assets/videos/intro_1.mp4');
         this.load.video('intro2', 'assets/videos/intro_2.mp4');
         this.load.video('intro3', 'assets/videos/intro_3.mp4');
     }
@@ -23,12 +22,12 @@ export default class IntroVideoScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#000000');
 
         // Cria o reprodutor de vídeo ajustado à tela 800x600
-        const initialVideo = this.isBossTransition ? 'intro3' : 'intro1';
+        const initialVideo = this.isBossTransition ? 'intro3' : 'intro2';
         const videoPlayer = this.add.video(400, 300, initialVideo);
         videoPlayer.setDisplaySize(800, 600);
         videoPlayer.play();
 
-        const initialSubtitle = this.isBossTransition ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' : 'As sombras cobrem as antigas trilhas de Brentel...';
+        const initialSubtitle = this.isBossTransition ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' : 'John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.';
 
         // Legenda Narrativa
         const subtitleText = this.add.text(400, 500, initialSubtitle, {
@@ -59,17 +58,11 @@ export default class IntroVideoScene extends Phaser.Scene {
                     this.scene.start('BattleScene', { isBoss: true });
                 });
             } else {
-                if (videoPlayer.videoTexture.key === 'intro1') {
-                    videoPlayer.changeSource('intro2');
-                    subtitleText.setText('John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.');
-                    videoPlayer.play();
-                } else if (videoPlayer.videoTexture.key === 'intro2') {
-                    this.isTransitioning = true;
-                    this.cameras.main.fadeOut(500, 0, 0, 0);
-                    this.cameras.main.once('camerafadeoutcomplete', () => {
-                        this.scene.start('MainScene');
-                    });
-                }
+                this.isTransitioning = true;
+                this.cameras.main.fadeOut(500, 0, 0, 0);
+                this.cameras.main.once('camerafadeoutcomplete', () => {
+                    this.scene.start('MainScene');
+                });
             }
         });
 

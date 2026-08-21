@@ -22,7 +22,8 @@ export default class BattleScene extends Phaser.Scene {
         bg.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
         bg.setDepth(-1);
 
-        this.add.rectangle(400, 500, 760, 160, 0x000000).setStrokeStyle(4, 0xffffff).setDepth(9);
+        // Caixa de Diálogo / Log no Canto Inferior Esquerdo
+        this.add.rectangle(250, 510, 460, 140, 0x000000, 0.85).setStrokeStyle(4, 0x4a3c31).setDepth(9);
 
         // Música de Combate
         this.sound.stopAll();
@@ -31,8 +32,8 @@ export default class BattleScene extends Phaser.Scene {
         this.bgm = this.sound.add(bgmKey, { loop: true, volume: bgmVolume });
         this.bgm.play();
 
-        this.statusText = this.add.text(400, 50, 'Batalha Iniciada!', {
-            fontFamily: 'Courier', fontSize: '24px', color: '#ffffff', align: 'center'
+        this.statusText = this.add.text(250, 510, 'Batalha Iniciada!', {
+            fontFamily: 'Courier', fontSize: '20px', color: '#ffffff', align: 'center', wordWrap: { width: 420 }
         }).setOrigin(0.5).setDepth(10);
 
         // Inicialização ou carregamento de Status Persistentes
@@ -68,61 +69,106 @@ export default class BattleScene extends Phaser.Scene {
         if (this.isBoss) this.enemySprite.setTint(0xffaa55);
 
         this.isPlayerTurn = true;
-        this.currentMenu = 'main'; // 'main' ou 'skills'
-        this.menuIndex = 0;
-        this.menuGroup = this.add.group();
+        this.currentMenu = 'main'; 
 
-        this.menuStyle = { fontFamily: 'Courier', fontSize: '20px', color: '#ffffff' };
-        this.hoverStyle = { color: '#ffea00', fontStyle: 'bold' };
+        // Menu Container HTML ancorado no bottom-right
+        const menuWrapperHTML = `
+            <div style="width: 800px; height: 600px; position: relative; pointer-events: none;">
+                <div id="combat-menu-area" class="combat-menu-container" style="position: absolute; bottom: 20px; right: 20px;"></div>
+            </div>
+        `;
+        this.domMenuContainer = this.add.dom(400, 300).createFromHTML(menuWrapperHTML);
+        this.domMenuContainer.setDepth(10);
 
         this.buildMainMenu();
         
         this.input.keyboard.on('keydown', this.handleInput, this);
     }
 
+    updateDOMMenu(htmlContent, options) {
+        const menuArea = this.domMenuContainer.getChildByID('combat-menu-area');
+        if (menuArea) {
+            menuArea.innerHTML = htmlContent;
+            
+            this.menuOptions = options;
+            this.menuIndex = 0;
+            this.updateMenuCursor();
+
+            // Adiciona cliques do mouse
+            options.forEach((opt, index) => {
+                const btn = this.domMenuContainer.getChildByID(opt.id);
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        if (!this.isPlayerTurn) return;
+                        this.sound.play('menu_select');
+                        this.menuIndex = index;
+                        this.executeMenuAction();
+                    });
+                    btn.addEventListener('mouseenter', () => {
+                        if (!this.isPlayerTurn) return;
+                        this.menuIndex = index;
+                        this.sound.play('menu_move');
+                        this.updateMenuCursor();
+                    });
+                }
+            });
+        }
+    }
+
     buildMainMenu() {
-        this.menuGroup.clear(true, true);
-        this.menuOptions = [
-            { textObj: this.add.text(100, 440, '[ Atacar ]', this.menuStyle).setDepth(10), action: 'attack' },
-            { textObj: this.add.text(100, 490, '[ Habilidades / Magias ]', this.menuStyle).setDepth(10), action: 'magic' },
-            { textObj: this.add.text(450, 440, '[ Itens ]', this.menuStyle).setDepth(10), action: 'item_menu' },
-            { textObj: this.add.text(450, 490, '[ Fugir ]', this.menuStyle).setDepth(10), action: 'flee' }
+        const html = `
+            <button id="btn-attack" class="combat-btn">Atacar</button>
+            <button id="btn-magic" class="combat-btn">Habilidades / Magias</button>
+            <button id="btn-item" class="combat-btn">Itens</button>
+            <button id="btn-flee" class="combat-btn">Fugir</button>
+        `;
+        const options = [
+            { id: 'btn-attack', action: 'attack' },
+            { id: 'btn-magic', action: 'magic' },
+            { id: 'btn-item', action: 'item_menu' },
+            { id: 'btn-flee', action: 'flee' }
         ];
-        this.menuOptions.forEach(opt => this.menuGroup.add(opt.textObj));
-        this.menuIndex = 0;
-        this.updateMenuCursor();
+        this.updateDOMMenu(html, options);
     }
 
     buildItemsMenu() {
-        this.menuGroup.clear(true, true);
-        this.menuOptions = [
-            { textObj: this.add.text(100, 440, `[ Poção de Ervas (x${this.playerStats.potesCura}) ]`, this.menuStyle).setDepth(10), action: 'use_potion' }
+        const html = `
+            <button id="btn-potion" class="combat-btn">Poção de Ervas (x${this.playerStats.potesCura})</button>
+        `;
+        const options = [
+            { id: 'btn-potion', action: 'use_potion' }
         ];
-        this.menuOptions.forEach(opt => this.menuGroup.add(opt.textObj));
-        this.menuIndex = 0;
-        this.updateMenuCursor();
+        this.updateDOMMenu(html, options);
     }
 
     buildSkillsMenu() {
-        this.menuGroup.clear(true, true);
-        this.menuOptions = [
-            { textObj: this.add.text(100, 440, '[ Disparo Preciso (10 SP) ]', this.menuStyle).setDepth(10), action: 'skill_preciso' },
-            { textObj: this.add.text(100, 490, '[ Tiro Duplo (15 SP) ]', this.menuStyle).setDepth(10), action: 'skill_duplo' }
+        const html = `
+            <button id="btn-skill1" class="combat-btn">Disparo Preciso (10 SP)</button>
+            <button id="btn-skill2" class="combat-btn">Tiro Duplo (15 SP)</button>
+        `;
+        const options = [
+            { id: 'btn-skill1', action: 'skill_preciso' },
+            { id: 'btn-skill2', action: 'skill_duplo' }
         ];
-        this.menuOptions.forEach(opt => this.menuGroup.add(opt.textObj));
-        this.menuIndex = 0;
-        this.updateMenuCursor();
+        this.updateDOMMenu(html, options);
     }
 
     updateMenuCursor() {
+        if (!this.menuOptions) return;
         this.menuOptions.forEach((opt, index) => {
-            let baseText = opt.textObj.text.replace('> ', '');
-            if (index === this.menuIndex) {
-                opt.textObj.setStyle(this.hoverStyle);
-                opt.textObj.setText('> ' + baseText);
-            } else {
-                opt.textObj.setStyle(this.menuStyle);
-                opt.textObj.setText(baseText);
+            const btn = this.domMenuContainer.getChildByID(opt.id);
+            if (btn) {
+                if (index === this.menuIndex) {
+                    btn.style.borderColor = '#ffea00';
+                    btn.style.color = '#ffffff';
+                    btn.style.transform = 'scale(1.02)';
+                    btn.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                } else {
+                    btn.style.borderColor = '#8b7355';
+                    btn.style.color = '#f5deb3';
+                    btn.style.transform = 'scale(1)';
+                    btn.style.boxShadow = 'none';
+                }
             }
         });
     }
@@ -174,7 +220,7 @@ export default class BattleScene extends Phaser.Scene {
                 this.sound.play('potion_use');
                 this.showFloatingText(this.playerSprite.x, this.playerSprite.y - 40, `+${cura}`, '#00ff00');
                 this.statusText.setText('Você usou uma Poção de Ervas!');
-                this.menuGroup.setAlpha(0.5);
+                this.domMenuContainer.setAlpha(0.5);
                 
                 this.time.delayedCall(1500, () => this.enemyTurn());
             } else {
@@ -227,7 +273,7 @@ export default class BattleScene extends Phaser.Scene {
     executePlayerAttack(message, damage) {
         this.isPlayerTurn = false;
         this.statusText.setText(message);
-        this.menuGroup.setAlpha(0.5);
+        this.domMenuContainer.setAlpha(0.5);
         this.sound.play('arrow_shot');
 
         this.tweens.add({
@@ -246,7 +292,7 @@ export default class BattleScene extends Phaser.Scene {
     executeDoubleAttack() {
         this.isPlayerTurn = false;
         this.statusText.setText('Tiro Duplo!');
-        this.menuGroup.setAlpha(0.5);
+        this.domMenuContainer.setAlpha(0.5);
 
         // Primeiro Tiro
         this.sound.play('arrow_shot');
@@ -317,7 +363,7 @@ export default class BattleScene extends Phaser.Scene {
                         this.statusText.setText('Seu turno.');
                         if (this.currentMenu === 'main') this.buildMainMenu();
                         else this.buildSkillsMenu();
-                        this.menuGroup.setAlpha(1);
+                        this.domMenuContainer.setAlpha(1);
                         this.isPlayerTurn = true;
                     });
                 }

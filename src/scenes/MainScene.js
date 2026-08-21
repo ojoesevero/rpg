@@ -186,6 +186,15 @@ export default class MainScene extends Phaser.Scene {
             left: Phaser.Input.Keyboard.KeyCodes.A, right: Phaser.Input.Keyboard.KeyCodes.D
         });
         
+        // Verifica modo de controle
+        const controlMode = this.registry.get('controlMode');
+        
+        this.virtualInput = { up: false, down: false, left: false, right: false, action: false };
+
+        if (controlMode === 'mobile') {
+            this.createMobileUI();
+        }
+        
         // Tecla de Pause
         this.input.keyboard.on('keydown', (event) => {
             if (event.code === 'Escape' || event.code === 'KeyP') {
@@ -197,6 +206,41 @@ export default class MainScene extends Phaser.Scene {
         this.playerSpeed = 200;
     }
 
+    createMobileUI() {
+        const dpadHTML = `
+            <div style="width: 800px; height: 600px; position: relative; pointer-events: none;">
+                <div class="dpad-container">
+                    <div class="dpad-btn dpad-up" id="btn-up">W</div>
+                    <div class="dpad-btn dpad-left" id="btn-left">A</div>
+                    <div class="dpad-btn dpad-right" id="btn-right">D</div>
+                    <div class="dpad-btn dpad-down" id="btn-down">S</div>
+                </div>
+                <div class="action-btn-container">
+                    <div class="action-btn" id="btn-action">AÇÃO</div>
+                </div>
+            </div>
+        `;
+        
+        this.domUI = this.add.dom(400, 300).createFromHTML(dpadHTML).setScrollFactor(0).setDepth(200);
+
+        const setupBtn = (id, direction) => {
+            const btn = this.domUI.getChildByID(id);
+            if (btn) {
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.virtualInput[direction] = true; });
+                btn.addEventListener('touchend', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
+                btn.addEventListener('mousedown', (e) => { e.preventDefault(); this.virtualInput[direction] = true; });
+                btn.addEventListener('mouseup', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
+                btn.addEventListener('mouseleave', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
+            }
+        };
+
+        setupBtn('btn-up', 'up');
+        setupBtn('btn-down', 'down');
+        setupBtn('btn-left', 'left');
+        setupBtn('btn-right', 'right');
+        setupBtn('btn-action', 'action');
+    }
+
     update() {
         this.player.body.setVelocity(0);
 
@@ -206,12 +250,12 @@ export default class MainScene extends Phaser.Scene {
         let currentAnim = null;
 
         // Verificar X
-        if (this.cursors.left.isDown || this.keys.left.isDown) {
+        if (this.cursors.left.isDown || this.keys.left.isDown || this.virtualInput.left) {
             velocityX = -this.playerSpeed;
             currentAnim = 'walk-left';
             this.player.setFlipX(true);
             isMoving = true;
-        } else if (this.cursors.right.isDown || this.keys.right.isDown) {
+        } else if (this.cursors.right.isDown || this.keys.right.isDown || this.virtualInput.right) {
             velocityX = this.playerSpeed;
             currentAnim = 'walk-right';
             this.player.setFlipX(false);
@@ -219,11 +263,11 @@ export default class MainScene extends Phaser.Scene {
         }
 
         // Verificar Y
-        if (this.cursors.up.isDown || this.keys.up.isDown) {
+        if (this.cursors.up.isDown || this.keys.up.isDown || this.virtualInput.up) {
             velocityY = -this.playerSpeed;
             if (!currentAnim) currentAnim = 'walk-up'; 
             isMoving = true;
-        } else if (this.cursors.down.isDown || this.keys.down.isDown) {
+        } else if (this.cursors.down.isDown || this.keys.down.isDown || this.virtualInput.down) {
             velocityY = this.playerSpeed;
             if (!currentAnim) currentAnim = 'walk-down';
             isMoving = true;

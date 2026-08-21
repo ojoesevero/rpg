@@ -1,4 +1,7 @@
+import './style.css';
 import Phaser from 'phaser';
+import BootSplashScene from './scenes/BootSplashScene';
+import PlatformSelectScene from './scenes/PlatformSelectScene';
 import TitleScene from './scenes/TitleScene';
 import IntroVideoScene from './scenes/IntroVideoScene';
 import MainScene from './scenes/MainScene';
@@ -18,11 +21,17 @@ const config = {
             debug: false
         }
     },
-    scene: [TitleScene, IntroVideoScene, MainScene, BattleScene, EndingScene, PauseScene],
-    pixelArt: true, // Importante para jogos 8-bits
+    dom: {
+        createContainer: true
+    },
+    scene: [BootSplashScene, PlatformSelectScene, TitleScene, IntroVideoScene, MainScene, BattleScene, EndingScene, PauseScene],
+    pixelArt: true,
+    antialias: false,
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 800,
+        height: 600
     }
 };
 

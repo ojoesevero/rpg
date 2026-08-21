@@ -62,6 +62,12 @@
   <tr>
     <td><strong>📊 HUD em Tempo Real</strong></td>
     <td>Painel fixo de exploração com visualização de HP, SP, Nível e contagem de poções.</td>
+  <tr>
+    <td rowspan="2" valign="top"><strong>📱 UI Híbrida (Phaser + DOM)</strong></td>
+    <td><strong>Controles Flexíveis:</strong> Seleção entre modo Teclado (PC) ou D-Pad Virtual Transparente (Celular).</td>
+  </tr>
+  <tr>
+    <td><strong>Menus de Batalha:</strong> Totalmente construídos com botões HTML flutuantes e CSS customizado para interação tátil.</td>
   </tr>
 </table>
 
