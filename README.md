@@ -1,59 +1,117 @@
-# Os Seis Contra o Abismo: Sombras de Brentel
+<div align="center">
+  <img src="public/assets/backgrounds/battle_bg.png" alt="Game Banner" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);">
+  
+  <br><br>
 
-Um Action RPG 2D (estilo *Top-Down* Zelda) com estética 8-bits e atmosfera Dark Fantasy. Baseado no continente de Brentel, o jogo explora a brutalidade, o luto e a busca por vingança através de seis protagonistas únicos e habilidades assimétricas.
-
-## 🛠️ Tecnologias e Arquitetura
-
-O projeto foi construído focando em performance, simplicidade de deploy e desenvolvimento escalável:
-
-* **Frontend (Game Engine):** [Phaser 3](https://phaser.io/) (Física Arcade, Spritesheets, Cenas)
-* **Desenvolvimento e Build:** [Vite](https://vitejs.dev/) (Vanilla JS)
-* **Hospedagem Alvo:** [Vercel](https://vercel.com/) (Deploy contínuo e Serverless Functions)
-* **Estilo Visual:** 8-bits / Pixel Art
-
-## 🕹️ Mecânicas Principais (Visão Geral)
-
-* **Combate e Movimentação Real-Time:** Movimentação em 8 direções com foco em precisão e esquiva.
-* **Sistema de Troca de Protagonista:** O controle alterna entre personagens específicos em pontos de controle (Checkpoints/Acampamentos).
-* **Habilidades Assimétricas:**
-  * **Rhogar Tordan:** Força bruta e combate corpo a corpo.
-  * **Verônica Stínfy:** Magias arcanas de longo alcance.
-  * **John Bardem:** Furtividade, arco e desarmamento de armadilhas.
-  * **Traudon Balker:** Metamorfose druídica (Lobo e Coruja).
-
-## 🚀 Como Rodar Localmente
-
-Para rodar o projeto localmente para testes ou desenvolvimento, siga os passos:
-
-1. **Pré-requisitos:** Certifique-se de ter o [Node.js](https://nodejs.org/) instalado.
-2. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/ojoesevero/rpg.git
-   cd rpg
-   ```
-3. **Instale as dependências:**
-   ```bash
-   npm install
-   ```
-4. **Inicie o servidor de desenvolvimento:**
-   ```bash
-   npm run dev
-   ```
-5. **Abra no navegador:**
-   O Vite exibirá no console a URL local (geralmente `http://localhost:5173`).
-
-## 🗺️ Roadmap de Desenvolvimento
-
-* **Fase 1: Setup e Movimentação** (Concluído ✅)
-  - Configuração do Vite, Vercel e Phaser 3.
-  - Cena inicial com movimentação 8-way do *placeholder*.
-* **Fase 2: Mundo e Colisões** (Em breve 🚧)
-  - Importação de *tilesets* e mapas (Tiled).
-  - Câmera dinâmica e colisões de cenário.
-* **Fase 3: Combate e Animação**
-  - Sprites animados, hitboxes, inteligência artificial inimiga.
-* **Fase 4: Backend e Estado do Jogo**
-  - Integração Serverless para salvar/carregar progresso (`/api/save`).
+  <h1 style="color: #ffea00; text-shadow: 2px 2px 4px #000000;">⚔️ Os Seis Contra o Abismo: Sombras de Brentel</h1>
+  
+  <p>
+    <i>Uma fatia vertical em Pixel Art 16-bit inspirada nos clássicos JRPGs da era de ouro.</i>
+  </p>
+</div>
 
 ---
-*Este projeto está em desenvolvimento ativo. As informações acima refletem o GDD atual.*
+
+## 📖 Sobre o Jogo
+
+<div align="justify" style="padding: 10px; background-color: rgba(255, 255, 255, 0.05); border-left: 4px solid #ffea00; border-radius: 5px;">
+  <strong>Os Seis Contra o Abismo: Sombras de Brentel</strong> é um JRPG por turnos desenvolvido em <strong>Phaser 3</strong> com empacotamento rápido via <strong>Vite</strong>. 
+  <br><br>
+  Nesta versão demo jogável (<em>Vertical Slice</em>), você assume o controle de <strong>John Bardem</strong>, um patrulheiro florestal experiente encarregado de investigar as trilhas traiçoeiras da Floresta de Walldarten e conter a ameaça que surge das profundezas do Abismo.
+</div>
+
+---
+
+## 🎮 Funcionalidades da Demo (John Bardem)
+
+<table>
+  <tr>
+    <td width="30%"><strong>🗺️ Exploração Orgânica no Overworld</strong></td>
+    <td>Navegação fluida em 8 direções por caminhos de terra batida, com barreiras e colisões físicas invisíveis na vegetação densa.</td>
+  </tr>
+  <tr>
+    <td rowspan="4" valign="top"><strong>⚔️ Sistema de Batalha por Turnos</strong></td>
+    <td>Menu clássico navegável por teclado (<code>Atacar</code>, <code>Habilidades / Magias</code>, <code>Itens</code>, <code>Fugir</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>Habilidades com SP:</strong> <em>Disparo Preciso</em> (dano concentrado) e <em>Tiro Duplo</em> (múltiplos hits encadeados com animações dedicadas).</td>
+  </tr>
+  <tr>
+    <td><strong>Gerenciamento de Inventário:</strong> Consumo de <em>Poções de Ervas</em> em combate com limite de estoque.</td>
+  </tr>
+  <tr>
+    <td><strong>Progressão e Level Up:</strong> Ganho dinâmico de XP, regeneração passiva e ampliação de status persistentes entre as cenas.</td>
+  </tr>
+  <tr>
+    <td rowspan="3" valign="top"><strong>🎬 Direção Cinematográfica</strong></td>
+    <td>Menu inicial com transições em <em>Fade</em>.</td>
+  </tr>
+  <tr>
+    <td>Cutscenes de abertura e transição dramática de Boss integradas via vídeo.</td>
+  </tr>
+  <tr>
+    <td>Encontro final contra o temido <strong>Líder Goblin</strong>.</td>
+  </tr>
+  <tr>
+    <td rowspan="2" valign="top"><strong>🔊 Sonoplastia Completa (BGM & SFX)</strong></td>
+    <td>Trilhas sonoras dinâmicas em loop com fade out (<code>Title</code>, <code>Overworld</code>, <code>Battle</code>, <code>Boss</code> e <code>Victory Fanfare</code>).</td>
+  </tr>
+  <tr>
+    <td>Efeitos sonoros dedicados para cliques de menu, disparos de flecha, impactos de dano e uso de itens.</td>
+  </tr>
+  <tr>
+    <td><strong>📊 HUD em Tempo Real</strong></td>
+    <td>Painel fixo de exploração com visualização de HP, SP, Nível e contagem de poções.</td>
+  </tr>
+</table>
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+<div align="center" style="margin: 20px 0;">
+  <a href="https://phaser.io/" target="_blank">
+    <img src="https://img.shields.io/badge/Phaser%203-38B249?style=for-the-badge&logo=phaser&logoColor=white" alt="Phaser 3" />
+  </a>
+  <a href="https://vitejs.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  </a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
+    <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  </a>
+</div>
+
+<ul>
+  <li><strong>Design & Áudio:</strong> Pixel Art e Fundos conceituais gerados com auxílio de IA.</li>
+  <li><strong>Cinematografia:</strong> Vídeos cinematográficos de abertura via <strong>Google Veo</strong>.</li>
+  <li><strong>Sonoplastia:</strong> Faixas BGM estruturadas com IA Generativa de Áudio.</li>
+</ul>
+
+---
+
+## 🚀 Como Executar Localmente
+
+<h3>Pré-requisitos</h3>
+
+<ul>
+  <li><a href="https://nodejs.org/" target="_blank">Node.js</a> (versão 18 ou superior)</li>
+  <li><a href="https://git-scm.com/" target="_blank">Git</a></li>
+</ul>
+
+<h3>Passo a Passo</h3>
+
+<ol>
+  <li>
+    <strong>Clone o repositório:</strong>
+    <pre><code>git clone https://github.com/ojoesevero/rpg.git
+cd rpg</code></pre>
+  </li>
+  <li>
+    <strong>Instale as dependências:</strong>
+    <pre><code>npm install</code></pre>
+  </li>
+  <li>
+    <strong>Inicie o servidor de desenvolvimento:</strong>
+    <pre><code>npm run dev</code></pre>
+  </li>
+</ol>
