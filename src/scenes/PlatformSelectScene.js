@@ -125,6 +125,21 @@ export default class PlatformSelectScene extends Phaser.Scene {
         this.isTransitioning = true;
 
         this.registry.set('controlMode', mode);
+
+        // Ativa Fullscreen e Trava de Paisagem em dispositivos móveis
+        try {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen().catch(() => {});
+            }
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("landscape").catch(() => {});
+            }
+        } catch (e) {
+            console.warn("Fullscreen/Orientation não suportado:", e);
+        }
         
         // Retoma o AudioContext se estiver suspenso pelo navegador
         if (this.sound.context && this.sound.context.state === 'suspended') {

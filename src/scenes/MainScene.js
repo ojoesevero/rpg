@@ -302,11 +302,15 @@ export default class MainScene extends Phaser.Scene {
     createMobileUI() {
         const dpadHTML = `
             <div style="width: 800px; height: 600px; position: relative; pointer-events: none;">
+                <div class="top-controls-container">
+                    <button id="btn-fullscreen" class="icon-control-btn" title="Tela Cheia">⛶</button>
+                    <button id="btn-pause" class="icon-control-btn" title="Pausar">⏸</button>
+                </div>
                 <div class="dpad-container">
-                    <div class="dpad-btn dpad-up" id="btn-up">W</div>
-                    <div class="dpad-btn dpad-left" id="btn-left">A</div>
-                    <div class="dpad-btn dpad-right" id="btn-right">D</div>
-                    <div class="dpad-btn dpad-down" id="btn-down">S</div>
+                    <div class="dpad-btn dpad-up" id="btn-up">▲</div>
+                    <div class="dpad-btn dpad-left" id="btn-left">◀</div>
+                    <div class="dpad-btn dpad-right" id="btn-right">▶</div>
+                    <div class="dpad-btn dpad-down" id="btn-down">▼</div>
                 </div>
                 <div class="action-btn-container">
                     <div class="action-btn" id="btn-action">AÇÃO</div>
@@ -319,11 +323,23 @@ export default class MainScene extends Phaser.Scene {
         const setupBtn = (id, direction) => {
             const btn = this.domUI.getChildByID(id);
             if (btn) {
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.virtualInput[direction] = true; });
-                btn.addEventListener('touchend', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
-                btn.addEventListener('mousedown', (e) => { e.preventDefault(); this.virtualInput[direction] = true; });
-                btn.addEventListener('mouseup', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
-                btn.addEventListener('mouseleave', (e) => { e.preventDefault(); this.virtualInput[direction] = false; });
+                const activate = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    this.virtualInput[direction] = true;
+                    btn.classList.add('pressed');
+                };
+                const deactivate = (e) => {
+                    if (e && e.cancelable) e.preventDefault();
+                    this.virtualInput[direction] = false;
+                    btn.classList.remove('pressed');
+                };
+
+                btn.addEventListener('touchstart', activate, { passive: false });
+                btn.addEventListener('touchend', deactivate, { passive: false });
+                btn.addEventListener('touchcancel', deactivate, { passive: false });
+                btn.addEventListener('mousedown', activate);
+                btn.addEventListener('mouseup', deactivate);
+                btn.addEventListener('mouseleave', deactivate);
             }
         };
 
@@ -332,6 +348,31 @@ export default class MainScene extends Phaser.Scene {
         setupBtn('btn-left', 'left');
         setupBtn('btn-right', 'right');
         setupBtn('btn-action', 'action');
+
+        const btnFullscreen = this.domUI.getChildByID('btn-fullscreen');
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener('click', () => {
+                const elem = document.documentElement;
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
+                    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen().catch(() => {});
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock("landscape").catch(() => {});
+                    }
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(() => {});
+                }
+            });
+        }
+
+        const btnPause = this.domUI.getChildByID('btn-pause');
+        if (btnPause) {
+            btnPause.addEventListener('click', () => {
+                this.scene.pause();
+                this.scene.launch('PauseScene', { from: this.scene.key });
+            });
+        }
     }
 
     update() {
