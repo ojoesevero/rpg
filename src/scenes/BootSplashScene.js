@@ -5,11 +5,6 @@ export default class BootSplashScene extends Phaser.Scene {
         super('BootSplashScene');
     }
 
-    preload() {
-        // Pré-carrega o primeiro vídeo
-        this.load.video('intro1', 'assets/videos/intro_1.mp4');
-    }
-
     create() {
         this.cameras.main.setBackgroundColor('#000000');
 
@@ -63,32 +58,47 @@ export default class BootSplashScene extends Phaser.Scene {
         // Limpar o letreiro se não tiver limpado
         if (this.crawl) this.crawl.destroy();
 
-        // Fase 3: Tocar intro_1.mp4
-        const videoPlayer = this.add.video(400, 300, 'intro1');
-        videoPlayer.setDisplaySize(800, 600);
-        videoPlayer.play();
+        // Fase 3: Tocar intro_1.mp4 via DOM acelerado por GPU (Zero stutter)
+        const videoHTML = `
+            <video id="splash-video" playsinline webkit-playsinline style="width: 800px; height: 600px; object-fit: contain; background: #000; pointer-events: none;">
+                <source src="assets/videos/intro_1.mp4" type="video/mp4">
+            </video>
+        `;
+        this.domVideo = this.add.dom(400, 300).createFromHTML(videoHTML).setDepth(100);
+        this.videoEl = this.domVideo.getChildByID('splash-video');
 
-        videoPlayer.on('complete', () => {
+        if (this.videoEl) {
+            this.videoEl.play().catch(e => {
+                console.warn("Autoplay prevenido pelo navegador:", e);
+            });
+            this.videoEl.onended = () => {
+                this.finishSplash();
+            };
+        } else {
             this.finishSplash();
-        });
-        
-        this.currentVideo = videoPlayer;
+        }
     }
 
     skipIntro() {
         if (this.isSkipping) return;
         this.isSkipping = true;
 
-        if (this.currentVideo) {
-            this.currentVideo.stop();
+        if (this.videoEl) {
+            this.videoEl.pause();
         }
         
         this.finishSplash();
     }
 
     finishSplash() {
-        this.cameras.main.fadeOut(500, 0, 0, 0);
+        if (this.videoEl) {
+            this.videoEl.pause();
+        }
+        this.cameras.main.fadeOut(400, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
+            if (this.domVideo) {
+                this.domVideo.destroy();
+            }
             this.scene.start('PlatformSelectScene');
         });
     }

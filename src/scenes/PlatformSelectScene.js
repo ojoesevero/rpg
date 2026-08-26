@@ -5,54 +5,132 @@ export default class PlatformSelectScene extends Phaser.Scene {
         super('PlatformSelectScene');
     }
 
+    preload() {
+        if (!this.cache.audio.exists('menu_move')) {
+            this.load.audio('menu_move', 'assets/audio/sfx/menu_move.mp3');
+        }
+        if (!this.cache.audio.exists('menu_select')) {
+            this.load.audio('menu_select', 'assets/audio/sfx/menu_select.mp3');
+        }
+    }
+
     create() {
+        this.isTransitioning = false;
         this.cameras.main.setBackgroundColor('#1a1a24');
 
-        this.add.text(400, 150, 'ESCOLHA SEU DISPOSITIVO', {
-            fontFamily: 'Courier', fontSize: '32px', fontStyle: 'bold', color: '#ffffff'
+        this.add.text(400, 130, 'ESCOLHA SEU DISPOSITIVO', {
+            fontFamily: 'Pixelify Sans', fontSize: '32px', fontStyle: 'bold', color: '#ffffff',
+            stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5);
 
-        // Opção PC
-        const pcCard = this.add.rectangle(400, 300, 400, 80, 0x000000, 0.8).setStrokeStyle(3, 0xffea00);
-        pcCard.setInteractive({ useHandCursor: true });
-        
-        const pcText = this.add.text(400, 300, '🖥️ MODO COMPUTADOR (PC)\n[Teclado e Mouse]', {
-            fontFamily: 'Courier', fontSize: '20px', color: '#ffea00', align: 'center'
+        this.add.text(400, 175, 'Use as Setas / WASD ou Clique para selecionar', {
+            fontFamily: 'Pixelify Sans', fontSize: '16px', color: '#aaaaaa'
         }).setOrigin(0.5);
 
-        // Opção Mobile
-        const mobileCard = this.add.rectangle(400, 420, 400, 80, 0x000000, 0.8).setStrokeStyle(3, 0xaaaaaa);
-        mobileCard.setInteractive({ useHandCursor: true });
+        this.selectedIndex = 0;
+        this.options = [
+            { mode: 'pc', title: '🖥️ MODO COMPUTADOR (PC)', subtitle: '[Teclado e Mouse]', y: 280 },
+            { mode: 'mobile', title: '📱 MODO CELULAR (MOBILE)', subtitle: '[Touch na Tela com D-Pad]', y: 400 }
+        ];
 
-        const mobileText = this.add.text(400, 420, '📱 MODO CELULAR (MOBILE)\n[Touch na Tela]', {
-            fontFamily: 'Courier', fontSize: '20px', color: '#aaaaaa', align: 'center'
+        this.cardElements = [];
+
+        this.options.forEach((opt, index) => {
+            const card = this.add.rectangle(400, opt.y, 440, 95, 0x000000, 0.85).setStrokeStyle(3, 0x555566);
+            card.setInteractive({ useHandCursor: true });
+
+            const textTitle = this.add.text(400, opt.y - 14, opt.title, {
+                fontFamily: 'Pixelify Sans', fontSize: '22px', fontStyle: 'bold', color: '#ffffff'
+            }).setOrigin(0.5);
+
+            const textSub = this.add.text(400, opt.y + 18, opt.subtitle, {
+                fontFamily: 'Pixelify Sans', fontSize: '16px', color: '#aaaaaa'
+            }).setOrigin(0.5);
+
+            card.on('pointerover', () => {
+                if (this.isTransitioning) return;
+                if (this.selectedIndex !== index) {
+                    if (this.cache.audio.exists('menu_move')) this.sound.play('menu_move');
+                    this.selectedIndex = index;
+                    this.updateSelection();
+                }
+            });
+
+            card.on('pointerdown', () => {
+                if (this.isTransitioning) return;
+                this.selectedIndex = index;
+                this.selectPlatform(opt.mode);
+            });
+
+            this.cardElements.push({ card, textTitle, textSub, y: opt.y });
+        });
+
+        // Cursor indicador ▶
+        this.cursor = this.add.text(140, 280, '▶', {
+            fontFamily: 'Pixelify Sans', fontSize: '28px', color: '#ffea00',
+            stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5);
 
-        // Hover PC
-        pcCard.on('pointerover', () => {
-            pcCard.setFillStyle(0x333333, 0.8);
-        });
-        pcCard.on('pointerout', () => {
-            pcCard.setFillStyle(0x000000, 0.8);
-        });
-
-        // Hover Mobile
-        mobileCard.on('pointerover', () => {
-            mobileCard.setFillStyle(0x333333, 0.8);
-        });
-        mobileCard.on('pointerout', () => {
-            mobileCard.setFillStyle(0x000000, 0.8);
+        this.tweens.add({
+            targets: this.cursor,
+            x: '+=8',
+            duration: 400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
         });
 
-        // Clicks
-        pcCard.on('pointerdown', () => this.selectPlatform('pc'));
-        mobileCard.on('pointerdown', () => this.selectPlatform('mobile'));
+        this.updateSelection();
+
+        // Teclado (WASD e Setas)
+        this.input.keyboard.on('keydown', (event) => {
+            if (this.isTransitioning) return;
+
+            if (event.code === 'ArrowDown' || event.code === 'KeyS') {
+                if (this.cache.audio.exists('menu_move')) this.sound.play('menu_move');
+                this.selectedIndex = (this.selectedIndex + 1) % this.options.length;
+                this.updateSelection();
+            } else if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+                if (this.cache.audio.exists('menu_move')) this.sound.play('menu_move');
+                this.selectedIndex = (this.selectedIndex - 1 + this.options.length) % this.options.length;
+                this.updateSelection();
+            } else if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
+                this.selectPlatform(this.options[this.selectedIndex].mode);
+            }
+        });
+    }
+
+    updateSelection() {
+        this.cardElements.forEach((el, index) => {
+            const isSelected = index === this.selectedIndex;
+            if (isSelected) {
+                el.card.setStrokeStyle(4, 0xffea00);
+                el.card.setFillStyle(0x2a2a35, 0.95);
+                el.card.setScale(1.03);
+                el.textTitle.setColor('#ffea00').setScale(1.03);
+                el.textSub.setColor('#ffffff').setScale(1.03);
+                this.cursor.setY(el.y);
+            } else {
+                el.card.setStrokeStyle(3, 0x444455);
+                el.card.setFillStyle(0x000000, 0.85);
+                el.card.setScale(1.0);
+                el.textTitle.setColor('#888899').setScale(1.0);
+                el.textSub.setColor('#666677').setScale(1.0);
+            }
+        });
     }
 
     selectPlatform(mode) {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+
         this.registry.set('controlMode', mode);
         
-        // Tentar tocar som se ele já estiver carregado no cache global (será carregado depois, mas caso exista)
+        // Retoma o AudioContext se estiver suspenso pelo navegador
+        if (this.sound.context && this.sound.context.state === 'suspended') {
+            this.sound.context.resume();
+        }
+
         if (this.cache.audio.exists('menu_select')) {
             this.sound.play('menu_select');
         }

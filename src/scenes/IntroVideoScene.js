@@ -5,90 +5,83 @@ export default class IntroVideoScene extends Phaser.Scene {
         super('IntroVideoScene');
     }
 
-    preload() {
-        // Carrega os vídeos da cutscene inicial
-        this.load.video('intro2', 'assets/videos/intro_2.mp4');
-        this.load.video('intro3', 'assets/videos/intro_3.mp4');
-    }
-
     init(data) {
         this.isBossTransition = data?.isBossTransition || false;
     }
 
     create() {
-        this.isTransitioning = false; // Flag anti-spam
-
-        // Fundo preto durante o carregamento/vídeo
+        this.isTransitioning = false;
         this.cameras.main.setBackgroundColor('#000000');
 
-        // Cria o reprodutor de vídeo ajustado à tela 800x600
-        const initialVideo = this.isBossTransition ? 'intro3' : 'intro2';
-        const videoPlayer = this.add.video(400, 300, initialVideo);
-        
-        videoPlayer.on('play', () => {
-            const scaleX = 800 / videoPlayer.width;
-            const scaleY = 600 / videoPlayer.height;
-            const scale = Math.min(scaleX, scaleY);
-            videoPlayer.setScale(scale);
-        });
-        
-        videoPlayer.play();
+        const videoSrc = this.isBossTransition ? 'assets/videos/intro_3.mp4' : 'assets/videos/intro_2.mp4';
+        const initialSubtitle = this.isBossTransition 
+            ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' 
+            : 'John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.';
 
-        const initialSubtitle = this.isBossTransition ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' : 'John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.';
+        // Reprodutor de vídeo nativo acelerado por hardware
+        const videoHTML = `
+            <video id="intro-video" playsinline webkit-playsinline style="width: 800px; height: 600px; object-fit: contain; background: #000; pointer-events: none;">
+                <source src="${videoSrc}" type="video/mp4">
+            </video>
+        `;
+        this.domVideo = this.add.dom(400, 300).createFromHTML(videoHTML).setDepth(1);
+        this.videoEl = this.domVideo.getChildByID('intro-video');
+
+        if (this.videoEl) {
+            this.videoEl.play().catch(e => console.warn("Autoplay prevenido pelo navegador:", e));
+            this.videoEl.onended = () => this.advanceScene();
+        }
 
         // Legenda Narrativa
-        const subtitleText = this.add.text(400, 520, initialSubtitle, {
+        this.subtitleText = this.add.text(400, 515, initialSubtitle, {
             fontFamily: 'Pixelify Sans',
-            fontSize: '16px',
+            fontSize: '17px',
             color: '#f4d03f',
             align: 'center',
-            backgroundColor: '#000000aa',
-            padding: { x: 10, y: 5 },
-            wordWrap: { width: 700 }
+            backgroundColor: '#000000bb',
+            padding: { x: 12, y: 6 },
+            wordWrap: { width: 700 },
+            stroke: '#000000',
+            strokeThickness: 3
         }).setOrigin(0.5).setDepth(10);
 
         // Texto informando opção de pular
-        const skipText = this.add.text(400, 570, '[ Espaço ] Pular Introdução', {
+        this.skipText = this.add.text(400, 565, '[ Espaço / Enter / Clique ] Pular', {
             fontFamily: 'Pixelify Sans',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#ffffff',
-            backgroundColor: '#000000aa'
+            backgroundColor: '#000000bb',
+            padding: { x: 8, y: 4 }
         }).setOrigin(0.5).setDepth(10);
 
-        // Lógica de sequência de vídeos
-        videoPlayer.on('complete', () => {
-            if (this.isTransitioning) return;
-            
-            if (this.isBossTransition) {
-                this.isTransitioning = true;
-                this.cameras.main.fadeOut(500, 0, 0, 0);
-                this.cameras.main.once('camerafadeoutcomplete', () => {
-                    this.scene.start('BattleScene', { isBoss: true });
-                });
-            } else {
-                this.isTransitioning = true;
-                this.cameras.main.fadeOut(500, 0, 0, 0);
-                this.cameras.main.once('camerafadeoutcomplete', () => {
-                    this.scene.start('MainScene');
-                });
-            }
-        });
+        // Pular com clique
+        this.input.on('pointerdown', () => this.advanceScene());
 
-        // Evento para pular a cutscene
+        // Pular com teclado
         this.input.keyboard.on('keydown', (event) => {
             if (event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter') {
-                if (this.isTransitioning) return;
-                this.isTransitioning = true;
-                
-                videoPlayer.stop();
-                this.cameras.main.fadeOut(500, 0, 0, 0);
-                this.cameras.main.once('camerafadeoutcomplete', () => {
-                    if (this.isBossTransition) {
-                        this.scene.start('BattleScene', { isBoss: true });
-                    } else {
-                        this.scene.start('MainScene');
-                    }
-                });
+                this.advanceScene();
+            }
+        });
+    }
+
+    advanceScene() {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+
+        if (this.videoEl) {
+            this.videoEl.pause();
+        }
+
+        this.cameras.main.fadeOut(400, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            if (this.domVideo) {
+                this.domVideo.destroy();
+            }
+            if (this.isBossTransition) {
+                this.scene.start('BattleScene', { isBoss: true });
+            } else {
+                this.scene.start('MainScene');
             }
         });
     }
