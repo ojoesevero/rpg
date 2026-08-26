@@ -18,44 +18,35 @@ export default class IntroVideoScene extends Phaser.Scene {
             ? 'Ameaças espreitam na escuridão. O Abismo começa a se mover.' 
             : 'John Bardem, patrulheiro solitário, assume a vigília nas matas de Walldarten.';
 
-        // Reprodutor de vídeo nativo acelerado por hardware
+        // Reprodutor de vídeo nativo em tela cheia com legendas alinhadas
         const videoHTML = `
-            <video id="intro-video" playsinline webkit-playsinline style="width: 800px; height: 600px; object-fit: contain; background: #000; pointer-events: none;">
-                <source src="${videoSrc}" type="video/mp4">
-            </video>
+            <div id="intro-video-wrapper" class="intro-video-container">
+                <video id="intro-video-el" playsinline webkit-playsinline class="intro-video-player">
+                    <source src="${videoSrc}" type="video/mp4">
+                </video>
+                <div class="intro-subtitle-box">
+                    <div class="intro-subtitle-text">${initialSubtitle}</div>
+                    <div class="intro-skip-text">[ Toque na tela ou pressione Espaço para pular ]</div>
+                </div>
+            </div>
         `;
-        this.domVideo = this.add.dom(400, 300).createFromHTML(videoHTML).setDepth(1);
-        this.videoEl = this.domVideo.getChildByID('intro-video');
+        
+        document.body.insertAdjacentHTML('beforeend', videoHTML);
+        this.videoWrapper = document.getElementById('intro-video-wrapper');
+        this.videoEl = document.getElementById('intro-video-el');
 
         if (this.videoEl) {
             this.videoEl.play().catch(e => console.warn("Autoplay prevenido pelo navegador:", e));
             this.videoEl.onended = () => this.advanceScene();
         }
 
-        // Legenda Narrativa
-        this.subtitleText = this.add.text(400, 515, initialSubtitle, {
-            fontFamily: 'Pixelify Sans',
-            fontSize: '17px',
-            color: '#f4d03f',
-            align: 'center',
-            backgroundColor: '#000000bb',
-            padding: { x: 12, y: 6 },
-            wordWrap: { width: 700 },
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5).setDepth(10);
-
-        // Texto informando opção de pular
-        this.skipText = this.add.text(400, 565, '[ Espaço / Enter / Clique ] Pular', {
-            fontFamily: 'Pixelify Sans',
-            fontSize: '15px',
-            color: '#ffffff',
-            backgroundColor: '#000000bb',
-            padding: { x: 8, y: 4 }
-        }).setOrigin(0.5).setDepth(10);
-
-        // Pular com clique
-        this.input.on('pointerdown', () => this.advanceScene());
+        if (this.videoWrapper) {
+            this.videoWrapper.addEventListener('click', () => this.advanceScene());
+            this.videoWrapper.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+                this.advanceScene();
+            }, { passive: false });
+        }
 
         // Pular com teclado
         this.input.keyboard.on('keydown', (event) => {
@@ -72,12 +63,13 @@ export default class IntroVideoScene extends Phaser.Scene {
         if (this.videoEl) {
             this.videoEl.pause();
         }
+        if (this.videoWrapper) {
+            this.videoWrapper.remove();
+            this.videoWrapper = null;
+        }
 
-        this.cameras.main.fadeOut(400, 0, 0, 0);
+        this.cameras.main.fadeOut(300, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-            if (this.domVideo) {
-                this.domVideo.destroy();
-            }
             if (this.isBossTransition) {
                 this.scene.start('BattleScene', { isBoss: true });
             } else {

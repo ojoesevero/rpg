@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { mobileControls } from '../ui/mobileControls';
 
 export default class MainScene extends Phaser.Scene {
     constructor() {
@@ -92,6 +93,7 @@ export default class MainScene extends Phaser.Scene {
         this.physics.add.collider(this.enemies, this.treeColliders);
 
         this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
+            mobileControls.hide();
             this.registry.set('playerPos', { x: player.x, y: player.y });
             player.body.setVelocity(0);
             this.cursors.up.reset();
@@ -120,6 +122,7 @@ export default class MainScene extends Phaser.Scene {
             this.ysortEntities.push(boss);
 
             this.physics.add.collider(this.player, boss, (p, b) => {
+                mobileControls.hide();
                 this.registry.set('playerPos', { x: p.x, y: p.y });
                 p.body.setVelocity(0);
                 this.bgm.stop();
@@ -160,7 +163,7 @@ export default class MainScene extends Phaser.Scene {
             const ray = this.add.image(150 + i * 250, 300, 'god_ray');
             ray.setBlendMode(Phaser.BlendModes.ADD);
             ray.setAlpha(0.10);
-            ray.setDepth(9998); // Abaixo da névoa
+            ray.setDepth(9998);
             ray.setAngle(15);
             
             this.tweens.add({
@@ -228,7 +231,7 @@ export default class MainScene extends Phaser.Scene {
             alpha: { start: 0.6, end: 0 }
         }).setDepth(this.player.y - 1);
 
-        // Folhas ao vento (Folhas simuladas por pequenas texturas verdes)
+        // Folhas ao vento
         const leafGraphics = this.make.graphics({ x: 0, y: 0, add: false });
         leafGraphics.fillStyle(0x3b7d34);
         leafGraphics.fillRect(0, 0, 5, 5);
@@ -274,7 +277,7 @@ export default class MainScene extends Phaser.Scene {
         this.add.text(20, 35, `HP: ${stats.hp}/${stats.maxHp}   SP: ${stats.sp}/${stats.maxSp}`, { fontFamily: 'Pixelify Sans', fontSize: '12px', color: '#ffffff' }).setScrollFactor(0).setDepth(20000);
         this.add.text(20, 55, `Poções: ${stats.potesCura}`, { fontFamily: 'Pixelify Sans', fontSize: '12px', color: '#00ff00' }).setScrollFactor(0).setDepth(20000);
 
-        this.add.text(10, 570, 'JRPG: Ande (WASD) e encoste nos Goblins', { fontFamily: 'Pixelify Sans', fontSize: '14px', color: '#ffffff', backgroundColor: '#000000aa', padding: { x: 5, y: 5 } }).setScrollFactor(0).setDepth(20000);
+        this.add.text(10, 570, 'JRPG: Ande (WASD / D-Pad) e encoste nos Goblins', { fontFamily: 'Pixelify Sans', fontSize: '14px', color: '#ffffff', backgroundColor: '#000000aa', padding: { x: 5, y: 5 } }).setScrollFactor(0).setDepth(20000);
 
         // Inputs
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -284,11 +287,30 @@ export default class MainScene extends Phaser.Scene {
         });
         
         const controlMode = this.registry.get('controlMode');
-        this.virtualInput = { up: false, down: false, left: false, right: false, action: false };
+        
+        // Inicializa e exibe os controles mobile no viewport real se modo mobile
         if (controlMode === 'mobile') {
-            this.createMobileUI();
+            mobileControls.init(() => {
+                this.scene.pause();
+                this.scene.launch('PauseScene', { from: this.scene.key });
+            });
+            mobileControls.setPauseCallback(() => {
+                this.scene.pause();
+                this.scene.launch('PauseScene', { from: this.scene.key });
+            });
+            mobileControls.show();
+        } else {
+            mobileControls.hide();
         }
         
+        this.events.on('resume', () => {
+            if (this.registry.get('controlMode') === 'mobile') {
+                mobileControls.show();
+            }
+        });
+        this.events.on('pause', () => mobileControls.hide());
+        this.events.on('shutdown', () => mobileControls.hide());
+
         this.input.keyboard.on('keydown', (event) => {
             if (event.code === 'Escape' || event.code === 'KeyP') {
                 this.scene.pause();
@@ -297,82 +319,6 @@ export default class MainScene extends Phaser.Scene {
         });
 
         this.playerSpeed = 200;
-    }
-
-    createMobileUI() {
-        const dpadHTML = `
-            <div style="width: 800px; height: 600px; position: relative; pointer-events: none;">
-                <div class="top-controls-container">
-                    <button id="btn-fullscreen" class="icon-control-btn" title="Tela Cheia">⛶</button>
-                    <button id="btn-pause" class="icon-control-btn" title="Pausar">⏸</button>
-                </div>
-                <div class="dpad-container">
-                    <div class="dpad-btn dpad-up" id="btn-up">▲</div>
-                    <div class="dpad-btn dpad-left" id="btn-left">◀</div>
-                    <div class="dpad-btn dpad-right" id="btn-right">▶</div>
-                    <div class="dpad-btn dpad-down" id="btn-down">▼</div>
-                </div>
-                <div class="action-btn-container">
-                    <div class="action-btn" id="btn-action">AÇÃO</div>
-                </div>
-            </div>
-        `;
-        
-        this.domUI = this.add.dom(400, 300).createFromHTML(dpadHTML).setScrollFactor(0).setDepth(30000);
-
-        const setupBtn = (id, direction) => {
-            const btn = this.domUI.getChildByID(id);
-            if (btn) {
-                const activate = (e) => {
-                    if (e.cancelable) e.preventDefault();
-                    this.virtualInput[direction] = true;
-                    btn.classList.add('pressed');
-                };
-                const deactivate = (e) => {
-                    if (e && e.cancelable) e.preventDefault();
-                    this.virtualInput[direction] = false;
-                    btn.classList.remove('pressed');
-                };
-
-                btn.addEventListener('touchstart', activate, { passive: false });
-                btn.addEventListener('touchend', deactivate, { passive: false });
-                btn.addEventListener('touchcancel', deactivate, { passive: false });
-                btn.addEventListener('mousedown', activate);
-                btn.addEventListener('mouseup', deactivate);
-                btn.addEventListener('mouseleave', deactivate);
-            }
-        };
-
-        setupBtn('btn-up', 'up');
-        setupBtn('btn-down', 'down');
-        setupBtn('btn-left', 'left');
-        setupBtn('btn-right', 'right');
-        setupBtn('btn-action', 'action');
-
-        const btnFullscreen = this.domUI.getChildByID('btn-fullscreen');
-        if (btnFullscreen) {
-            btnFullscreen.addEventListener('click', () => {
-                const elem = document.documentElement;
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
-                    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen().catch(() => {});
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock("landscape").catch(() => {});
-                    }
-                } else {
-                    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen().catch(() => {});
-                }
-            });
-        }
-
-        const btnPause = this.domUI.getChildByID('btn-pause');
-        if (btnPause) {
-            btnPause.addEventListener('click', () => {
-                this.scene.pause();
-                this.scene.launch('PauseScene', { from: this.scene.key });
-            });
-        }
     }
 
     update() {
@@ -387,25 +333,27 @@ export default class MainScene extends Phaser.Scene {
         let vy = 0;
         let currentAnim = null;
 
-        if (this.cursors.left.isDown || this.keys.left.isDown || this.virtualInput.left) {
+        const virtual = mobileControls.getInput();
+
+        if (this.cursors.left.isDown || this.keys.left.isDown || virtual.left) {
             vx -= this.playerSpeed;
             currentAnim = 'walk-left';
             this.player.setFlipX(true);
             isMoving = true;
         } 
-        if (this.cursors.right.isDown || this.keys.right.isDown || this.virtualInput.right) {
+        if (this.cursors.right.isDown || this.keys.right.isDown || virtual.right) {
             vx += this.playerSpeed;
             currentAnim = 'walk-right';
             this.player.setFlipX(false);
             isMoving = true;
         }
 
-        if (this.cursors.up.isDown || this.keys.up.isDown || this.virtualInput.up) {
+        if (this.cursors.up.isDown || this.keys.up.isDown || virtual.up) {
             vy -= this.playerSpeed;
             if (!currentAnim) currentAnim = 'walk-up'; 
             isMoving = true;
         } 
-        if (this.cursors.down.isDown || this.keys.down.isDown || this.virtualInput.down) {
+        if (this.cursors.down.isDown || this.keys.down.isDown || virtual.down) {
             vy += this.playerSpeed;
             if (!currentAnim) currentAnim = 'walk-down';
             isMoving = true;
@@ -419,9 +367,7 @@ export default class MainScene extends Phaser.Scene {
         this.player.body.setVelocity(vx, vy);
 
         if (isMoving && currentAnim) {
-            // Tenta reproduzir animação de passos se os frames existirem
             this.player.anims.play(currentAnim, true);
-            // Efeito Bobbing vertical para reforçar movimento de andar (Pixel Earth style)
             this.player.y += Math.sin(this.time.now / 60) * 0.5;
 
             try {
@@ -435,7 +381,6 @@ export default class MainScene extends Phaser.Scene {
             }
         } else {
             this.player.anims.stop();
-            // Retorna ao frame inicial
             if (this.player.anims.currentAnim) {
                 this.player.setFrame(this.player.anims.currentAnim.frames[0].frame.name);
             }
@@ -445,7 +390,6 @@ export default class MainScene extends Phaser.Scene {
             if (enemy.active) enemy.body.setVelocity(0);
         });
 
-        // Y-Sorting dinâmico (Mantido para Player e Goblins)
         this.ysortEntities.forEach(entity => {
             if (entity.active) {
                 entity.setDepth(entity.y);

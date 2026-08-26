@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SKILLS } from '../data/skills';
 import { ITEMS } from '../data/items';
 import { ENEMIES } from '../data/enemies';
+import { mobileControls } from '../ui/mobileControls';
 
 export default class BattleScene extends Phaser.Scene {
     constructor() {
@@ -18,6 +19,7 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     create() {
+        mobileControls.hide();
         this.input.keyboard.enabled = true;
         this.cameras.main.setBackgroundColor('#1a1a24');
 
