@@ -86,30 +86,30 @@ export default class BattleScene extends Phaser.Scene {
         this.enemyMaxHP = this.enemyConfig.maxHp;
         this.enemyHP = this.enemyMaxHP;
 
-        // Textos de HP e SP com espaçamento claro
-        this.enemyNameText = this.add.text(200, 135, this.enemyConfig.name, {
-            fontFamily: 'Pixelify Sans', fontSize: '20px', fontStyle: 'bold', color: '#ffd700', stroke: '#000', strokeThickness: 3
+        // Textos de HP e SP no topo da arena (y: 60 a 120)
+        this.enemyNameText = this.add.text(200, 60, this.enemyConfig.name, {
+            fontFamily: 'Pixelify Sans', fontSize: '22px', fontStyle: 'bold', color: '#ffd700', stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(10);
 
-        this.enemyHPText = this.add.text(200, 165, `HP: ${this.enemyHP}/${this.enemyMaxHP}`, {
-            fontFamily: 'Pixelify Sans', fontSize: '18px', color: '#ff4444', stroke: '#000', strokeThickness: 3
+        this.enemyHPText = this.add.text(200, 95, `HP: ${this.enemyHP}/${this.enemyMaxHP}`, {
+            fontFamily: 'Pixelify Sans', fontSize: '20px', color: '#ff4444', stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(10);
 
-        this.playerHPText = this.add.text(600, 135, `HP: ${this.playerStats.hp}/${this.playerStats.maxHp}`, {
-            fontFamily: 'Pixelify Sans', fontSize: '18px', color: '#00ff00', stroke: '#000', strokeThickness: 3
+        this.playerHPText = this.add.text(620, 55, `HP: ${this.playerStats.hp}/${this.playerStats.maxHp}`, {
+            fontFamily: 'Pixelify Sans', fontSize: '19px', color: '#00ff00', stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(10);
 
-        this.playerSPText = this.add.text(600, 165, `SP: ${this.playerStats.sp}/${this.playerStats.maxSp}`, {
-            fontFamily: 'Pixelify Sans', fontSize: '18px', color: '#00bfff', stroke: '#000', strokeThickness: 3
+        this.playerSPText = this.add.text(620, 85, `SP: ${this.playerStats.sp}/${this.playerStats.maxSp}`, {
+            fontFamily: 'Pixelify Sans', fontSize: '19px', color: '#00bfff', stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(10);
 
-        this.playerLevelText = this.add.text(600, 195, `Nvl: ${this.playerStats.level} | XP: ${this.playerStats.xp}/${this.playerStats.nextXp}`, {
+        this.playerLevelText = this.add.text(620, 115, `Nvl: ${this.playerStats.level} | XP: ${this.playerStats.xp}/${this.playerStats.nextXp}`, {
             fontFamily: 'Pixelify Sans', fontSize: '15px', color: '#ffffff', stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(10);
 
-        // Sprites de Combate
-        this.playerSprite = this.add.sprite(600, 320, 'john', 2).setScale(0.3).setFlipX(true);
-        this.enemySprite = this.add.sprite(200, 320, 'goblin', 0).setScale(this.enemyConfig.scale);
+        // Sprites de Combate posicionados com folga acima do HUD (y: 230)
+        this.playerSprite = this.add.sprite(620, 230, 'john', 2).setScale(0.28).setFlipX(true);
+        this.enemySprite = this.add.sprite(200, 230, 'goblin', 0).setScale(this.enemyConfig.scale);
         if (this.enemyConfig.tint) this.enemySprite.setTint(this.enemyConfig.tint);
 
         // Efeito Atmosférico: Breathing (Respiração em Idle)
@@ -125,9 +125,9 @@ export default class BattleScene extends Phaser.Scene {
         this.isPlayerTurn = true;
         this.currentMenu = 'main'; 
 
-        // Menu Container HTML ancorado diretamente no Canto Inferior Direito (x: 640, y: 510)
+        // Menu Container HTML ancorado no Canto Inferior Direito (x: 640, y: 510)
         this.domMenuContainer = this.add.dom(640, 510).createFromHTML('<div id="combat-menu-area" class="combat-menu-container"></div>');
-        this.domMenuContainer.setDepth(10);
+        this.domMenuContainer.setOrigin(0.5, 0.5).setDepth(10);
 
         this.buildMainMenu();
         
