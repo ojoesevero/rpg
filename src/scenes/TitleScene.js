@@ -47,14 +47,22 @@ export default class TitleScene extends Phaser.Scene {
         this.bg = this.add.tileSprite(400, 300, 800, 600, 'battle_bg').setDepth(-3);
         this.bg.setTint(0x445577);
 
-        // Névoa
-        const fogGraphics = this.make.graphics({ x: 0, y: 0, add: false });
-        fogGraphics.fillStyle(0xcccccc, 1);
-        fogGraphics.fillRect(0, 0, 256, 256);
-        fogGraphics.generateTexture('fogTextureTitle', 256, 256);
-        this.fogLayer = this.add.tileSprite(400, 500, 800, 200, 'fogTextureTitle')
+        // Névoa suave com gradiente (Sem linhas duras)
+        if (!this.textures.exists('smoothFog')) {
+            const canvasTexture = this.textures.createCanvas('smoothFog', 256, 256);
+            const ctx = canvasTexture.context;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+            gradient.addColorStop(0, 'rgba(200, 220, 240, 0)');
+            gradient.addColorStop(0.5, 'rgba(200, 220, 240, 0.12)');
+            gradient.addColorStop(1, 'rgba(200, 220, 240, 0.35)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 256, 256);
+            canvasTexture.refresh();
+        }
+
+        this.fogLayer = this.add.tileSprite(400, 300, 800, 600, 'smoothFog')
             .setDepth(-2)
-            .setAlpha(0.20)
+            .setAlpha(0.6)
             .setBlendMode(Phaser.BlendModes.ADD);
 
         // Partículas (Sparks)
